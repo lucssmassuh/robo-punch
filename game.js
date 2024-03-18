@@ -1,75 +1,70 @@
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+// game.js
 
-// Define robot object with feet positions and rotation settings
-const robot = {
-    footRadius: 20,
-    // Counter-clockwise rotation initially
-    spinSpeed: -0.02,
-    // Initial position of the static foot
-    staticFoot: { x: canvas.width / 2, y: canvas.height / 2 },
-    // Initial position of the dynamic foot will be calculated
-    dynamicFoot: { x: 0, y: 0 },
-    // Initial angle for rotation
-    rotationAngle: 0,
+document.addEventListener('DOMContentLoaded', () => {
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.style.border = '1pt solid black';
 
-    // Function to update dynamic foot position relative to static foot
-    updateDynamicFootPosition: function() {
-        // Offset the dynamic foot by a fixed distance from the static foot
-        this.dynamicFoot.x = this.staticFoot.x + Math.cos(this.rotationAngle) * (this.footRadius * 3);
-        this.dynamicFoot.y = this.staticFoot.y + Math.sin(this.rotationAngle) * (this.footRadius * 3);
-    },
+  // Create two player robots with different initial positions and colors
+  const separation = 200; // Distance between the two players
+  const player1 = new Robot('red', canvas.width / 2 - separation / 2, canvas.height / 2);
+  player1.score = 0; // Initialize score
+  const player2 = new Robot('blue', canvas.width / 2 + separation / 2, canvas.height / 2);
+  player2.score = 0; // Initialize score
+  
+  // Listen for keydown events for both players
+  document.addEventListener('keydown', (e) => {
+      if (e.key === 'q' || e.key === 'Q') {
+          player1.toggleFeet();
+      } else if (e.key === 'p' || e.key === 'P') {
+          player2.toggleFeet();
+      }
+  });
 
-    // Function to draw both feet
-    draw: function() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+  function checkCollisionAndToggleDirection(robot1, robot2) {
+    const dx = robot1.dynamicFoot.x - robot2.staticFoot.x;
+    const dy = robot1.dynamicFoot.y - robot2.staticFoot.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
 
-        // Update dynamic foot position
-        this.updateDynamicFootPosition();
-
-        // Draw static foot
-        ctx.fillStyle = '#0095DD';
-        ctx.beginPath();
-        ctx.arc(this.staticFoot.x, this.staticFoot.y, this.footRadius, 0, 2 * Math.PI);
-        ctx.fill();
-
-        // Draw dynamic foot with a shadow effect
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-        ctx.beginPath();
-        ctx.arc(this.dynamicFoot.x, this.dynamicFoot.y, this.footRadius, 0, 2 * Math.PI);
-        ctx.fill();
-
-        // Update the rotation angle for the next frame
-        this.rotationAngle += this.spinSpeed;
-    },
-
-    // Function to toggle feet roles
-    toggleFeet: function() {
-        // Swap roles by directly setting the new static foot to the current dynamic foot position
-        // and calculate the next dynamic foot position without using previous values
-        let tempX = this.staticFoot.x, tempY = this.staticFoot.y;
-        this.staticFoot.x = this.dynamicFoot.x;
-        this.staticFoot.y = this.dynamicFoot.y;
-        this.dynamicFoot.x = tempX;
-        this.dynamicFoot.y = tempY;
-
-        // Reverse the rotation direction
-        this.spinSpeed = -this.spinSpeed;
-
-        // Reset the rotation angle to start the new dynamic rotation from the exact static position
-        this.rotationAngle = Math.atan2(this.dynamicFoot.y - this.staticFoot.y, this.dynamicFoot.x - this.staticFoot.x);
+    // Assuming the feet are circles, check if circles overlap
+    if (distance < robot1.footRadius + robot2.footRadius) {
+        robot1.spinSpeed = -robot1.spinSpeed; // Toggle the spin direction of robot1
+        player1.score += 10; // Assuming player2 scores when player1 hits
     }
-};
 
-document.addEventListener('keydown', (e) => {
-    if (e.code === 'Space') {
-        robot.toggleFeet();
+    // Check the other way around
+    const dx2 = robot2.dynamicFoot.x - robot1.staticFoot.x;
+    const dy2 = robot2.dynamicFoot.y - robot1.staticFoot.y;
+    const distance2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+
+    if (distance2 < robot1.footRadius + robot2.footRadius) {
+        robot2.spinSpeed = -robot2.spinSpeed; // Toggle the spin direction of robot2
+        player2.score += 10; // Assuming player1 scores when player2 hits
     }
-});
-
+}
+function drawScores() {
+  ctx.font = '20px Arial';
+  ctx.fillStyle = 'black';
+  ctx.textAlign = 'left';
+  ctx.fillText(player1.score, 10, 30); // Top left
+  ctx.textAlign = 'right';
+  ctx.fillText(player2.score, canvas.width - 10, 30); // Top right
+}
 function gameLoop() {
-    requestAnimationFrame(gameLoop);
-    robot.draw();
+  requestAnimationFrame(gameLoop);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  player1.updateDynamicFootPosition();
+  player2.updateDynamicFootPosition();
+
+  checkCollisionAndToggleDirection(player1, player2);
+
+  player1.draw(ctx);
+  player2.draw(ctx);
+
+  drawScores(); // Draw scores last to ensure they're on top
 }
 
-gameLoop();
+  // Start the game loop
+  gameLoop();
+});
