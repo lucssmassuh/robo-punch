@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.key === 'q' || e.key === 'Q') {
           player1.toggleFeet(canvas.width, canvas.height);
       } else if (e.key === 'p' || e.key === 'P') {
-        player1.toggleFeet(canvas.width, canvas.height);
+        player2.toggleFeet(canvas.width, canvas.height);
       } else if (e.key === 'w') {
         player1.fireBullet();
     } else if (e.key === 'o') {
