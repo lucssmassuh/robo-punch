@@ -4,7 +4,7 @@
 class Robot {
     constructor(color, x, y) {
         this.footRadius = 20;
-        this.spinSpeed = -0.1; // Initial spin direction can be adjusted per player if desired
+        this.spinSpeed = -0.05; // Initial spin direction can be adjusted per player if desired
         this.staticFoot = { x: x, y: y }; // Initial positions are passed during creation
         this.dynamicFoot = { x: 0, y: 0 }; // Set based on static foot in game setup
         this.rotationAngle = 0;
@@ -32,11 +32,16 @@ class Robot {
         this.rotationAngle += this.spinSpeed;
     }
 
-    toggleFeet() {
-        let temp = this.staticFoot;
-        this.staticFoot = this.dynamicFoot;
-        this.dynamicFoot = temp;
-        this.spinSpeed = -this.spinSpeed;
-        this.rotationAngle = Math.atan2(this.dynamicFoot.y - this.staticFoot.y, this.dynamicFoot.x - this.staticFoot.x);
+    toggleFeet(canvasWidth, canvasHeight) {
+        // Check if the dynamic foot is within the canvas limits
+        if (this.dynamicFoot.x >= 0 && this.dynamicFoot.x <=canvasWidth &&
+            this.dynamicFoot.y >= 0 && this.dynamicFoot.y <= canvasHeight) {
+            // Toggle feet only if the dynamic foot is within the canvas
+            let temp = this.staticFoot;
+            this.staticFoot = this.dynamicFoot;
+            this.dynamicFoot = temp;
+            this.spinSpeed = -this.spinSpeed;
+            this.rotationAngle = Math.atan2(this.dynamicFoot.y - this.staticFoot.y, this.dynamicFoot.x - this.staticFoot.x);
+        }
     }
 }

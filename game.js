@@ -15,10 +15,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // Listen for keydown events for both players
   document.addEventListener('keydown', (e) => {
       if (e.key === 'q' || e.key === 'Q') {
-          player1.toggleFeet();
+          player1.toggleFeet(canvas.width, canvas.height);
       } else if (e.key === 'p' || e.key === 'P') {
-          player2.toggleFeet();
-      }
+        player1.toggleFeet(canvas.width, canvas.height);
+      } else if (e.key === 'w') {
+        player1.fireBullet();
+    } else if (e.key === 'o') {
+        player2.fireBullet();
+    }
   });
 
   function checkCollisionAndToggleDirection(robot1, robot2) {
